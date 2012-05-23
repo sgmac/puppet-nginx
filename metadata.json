@@ -1,0 +1,10 @@
+{
+    "license": "MIT",
+    "author": "Sergio Galván <sergalma@gmail.com>",
+    "maintainer": "Sergio Galván <sergalma@gmail.com>",
+    "version": "0.1",
+    "source": "git://github.com/sgmac/",
+    "project_page": "http://github.com/sgmac/",
+    "summary": "Comments here.",
+    "dependencies": []
+}
