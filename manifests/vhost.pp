@@ -3,7 +3,7 @@ define nginx::vhost(
 	$host = $title,
 	$port = '80',
 	$root    = "/var/www/$host",
-	$server_name = "_",
+	$server_name = "$host",
 	$nginx = '/opt/nginx',
 	$logdir = '/var/log/nginx',
 ) {
@@ -45,13 +45,11 @@ define nginx::vhost(
 		target  => "$nginx/conf/sites-available/$host",
 		require => File["$host"],
 	}
-	#exec { 'restart nginx'
 
 	exec {'nginx':
 		command => '/etc/init.d/nginx restart',
 	}
 		
-	
 	
 }
 
