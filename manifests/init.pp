@@ -7,8 +7,8 @@ class nginx (
 	$installdir = '/opt/nginx',	
 	) {	
 
-	$options = "--auto --auto-download  --prefix=${installdir}" 
-
+	$options = "--auto --auto-download  --prefix=$installdir" 
+	
 	rvm_system_ruby {  
 		"$ruby_version":
 			ensure       => 'present',
@@ -16,12 +16,13 @@ class nginx (
 	}
 	rvm_gem {
 		"$ruby_version/passenger":
-	 		ensure  => "$passenger_version",
+	 		ensure => "$passenger_version",
 	}
 	
 	exec { 'nginx-install':
 		command => "/usr/local/rvm/gems/$ruby_version/bin/passenger-install-nginx-module $options",
 		group   => 'root',
+		unless  => "/usr/bin/test -d $installdir",
 		require => [ Rvm_system_ruby["$ruby_version"], Rvm_gem["$ruby_version/passenger"]];
 	}
 
@@ -31,7 +32,7 @@ class nginx (
 		group   => 'root',
 		mode    => '0644',
 		content => template('nginx/nginx.conf.erb'),
-		require => Exec['nginx-install']
+		require => Exec['nginx-install'],
 	}
 
 	file { 'nginx-init':
@@ -52,9 +53,9 @@ class nginx (
 
 	service { 'nginx':
 		ensure     => 'running',
-		enable     => 'true',
-		hasrestart => 'true',
-		hasstatus  => 'true',
+		enable     => true,
+		hasrestart => true,
+		hasstatus  => true,
 		subscribe  => File['nginx-config'],
 		require    => [ File["$logdir"], File['nginx-init']],
 	}

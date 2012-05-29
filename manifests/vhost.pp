@@ -1,13 +1,12 @@
 
 define nginx::vhost(
-	$host = $title,
+	$host = $name,
 	$port = '80',
 	$root    = "/var/www/$host",
 	$server_name = "$host",
-	$nginx = '/opt/nginx',
-	$logdir = '/var/log/nginx',
 ) {
-	
+	include nginx
+
 	file { "$root":
 		ensure => directory,
 		owner  => 'www-data',
@@ -26,13 +25,14 @@ define nginx::vhost(
 	# Solve path to nginx 
 	exec { 'create sites':,
 		path    => ['/usr/bin','/bin'],
-		unless  => "/usr/bin/test -d  $nginx/conf/sites-available && /usr/bin/test -d $nginx/conf/sites-enabled",
-		command => "/bin/mkdir  $nginx/conf/sites-available && /bin/mkdir $nginx/conf/sites-enabled",
+		unless  => "/usr/bin/test -d  ${nginx::installdir}/conf/sites-available && /usr/bin/test -d ${nginx::installdir}/conf/sites-enabled",
+		command => "/bin/mkdir  ${nginx::installdir}/conf/sites-available && /bin/mkdir ${nginx::installdir}/conf/sites-enabled",
+		require => Class['nginx']
 	}
 
 	file { "$host":
 		ensure  => present,
-		path    => "$nginx/conf/sites-available/$host",
+		path    => "$nginx::installdir/conf/sites-available/$host",
 		owner   => 'root',
 		group   => 'root',
 		mode    => '0644',
@@ -40,17 +40,15 @@ define nginx::vhost(
 		require => Exec['create sites'],
 	}
 	
-	file { "$nginx/conf/sites-enabled/$host":
+	file { "$nginx::installdir/conf/sites-enabled/$host":
 		ensure  => link,
-		target  => "$nginx/conf/sites-available/$host",
+		target  => "$nginx::installdir/conf/sites-available/$host",
 		require => File["$host"],
 	}
 
 	exec {'nginx':
 		command => '/etc/init.d/nginx restart',
+		require => File["$nginx::installdir/conf/sites-enabled/$host"]
 	}
-		
 	
 }
-
-
