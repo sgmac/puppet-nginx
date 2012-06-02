@@ -8,11 +8,12 @@ class nginx (
 	) {	
 
 	$options = "--auto --auto-download  --prefix=$installdir" 
-	
+
+	include rvm
 	rvm_system_ruby {  
 		"$ruby_version":
-			ensure       => 'present',
-			default_use  => true;
+			ensure      => 'present',
+			default_use => true;
 	}
 	rvm_gem {
 		"$ruby_version/passenger":
@@ -20,7 +21,7 @@ class nginx (
 	}
 	
 	exec { 'nginx-install':
-		command => "/usr/local/rvm/gems/$ruby_version/bin/passenger-install-nginx-module $options",
+		command => "/bin/bash -l -i -c \"/usr/local/rvm/gems/$ruby_version/bin/passenger-install-nginx-module $options\"",
 		group   => 'root',
 		unless  => "/usr/bin/test -d $installdir",
 		require => [ Rvm_system_ruby["$ruby_version"], Rvm_gem["$ruby_version/passenger"]];

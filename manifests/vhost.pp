@@ -14,7 +14,7 @@ define nginx::vhost(
 		mode   => '0755',
 	}
 
-	file { 'sample':
+	file { "content-$root":
 		ensure  => present,
 		path    => "$root/index.html",
 		owner   => 'www-data',
