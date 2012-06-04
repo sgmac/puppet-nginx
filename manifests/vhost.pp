@@ -4,14 +4,22 @@ define nginx::vhost(
 	$port = '80',
 	$root    = "/var/www/$host",
 	$server_name = "$host",
+	$www	    = '/var/www',
 ) {
+
 	include nginx
 
+	exec {'create www':
+		command => "/bin/mkdir $www && /bin/chown www-data:www-data $www",
+		unless  => "/usr/bin/test -d $www",
+	}
+	
 	file { "$root":
-		ensure => directory,
-		owner  => 'www-data',
-		group  => 'www-data',
-		mode   => '0755',
+		ensure  => directory,
+		owner   => 'www-data',
+		group   => 'www-data',
+		mode    => '0755',
+		require => Exec['create www'],	
 	}
 
 	file { "content-$root":
@@ -21,6 +29,7 @@ define nginx::vhost(
 		group   => 'www-data',
 		mode    =>  '0644',
 		content => "<h1> This is the vhost $host</h1>",
+		require => File["$root"],
 	}
 	# Solve path to nginx 
 	exec { 'create sites':,
