@@ -5,6 +5,7 @@ define nginx::vhost(
 	$root    = "/var/www/$host",
 	$server_name = "$host",
 	$www	    = '/var/www',
+	$create_root = true,
 ) {
 
 	include nginx
@@ -13,7 +14,8 @@ define nginx::vhost(
 		command => "/bin/mkdir $www && /bin/chown www-data:www-data $www",
 		unless  => "/usr/bin/test -d $www",
 	}
-	
+
+	if $create_root{
 	file { "$root":
 		ensure  => directory,
 		owner   => 'www-data',
@@ -21,15 +23,6 @@ define nginx::vhost(
 		mode    => '0755',
 		require => Exec['create www'],	
 	}
-
-	file { "content-$root":
-		ensure  => present,
-		path    => "$root/index.html",
-		owner   => 'www-data',
-		group   => 'www-data',
-		mode    =>  '0644',
-		content => "<h1> This is the vhost $host</h1>",
-		require => File["$root"],
 	}
 	# Solve path to nginx 
 	exec { 'create sites':,
@@ -48,7 +41,6 @@ define nginx::vhost(
 		content => template('nginx/vhost.erb'),
 		require => Exec['create sites'],
 	}
-	
 	file { "$nginx::installdir/conf/sites-enabled/$host":
 		ensure  => link,
 		target  => "$nginx::installdir/conf/sites-available/$host",
