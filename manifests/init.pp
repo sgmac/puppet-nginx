@@ -36,7 +36,7 @@ class nginx (
 		require => Exec['nginx-install'],
 	}
 
-	file { 'nginx-init':
+	file { 'nginx-service':
 		path    => '/etc/init.d/nginx',
 		owner   => 'root',
 		group   => 'root',
@@ -58,7 +58,7 @@ class nginx (
 		hasrestart => true,
 		hasstatus  => true,
 		subscribe  => File['nginx-config'],
-		require    => [ File["$logdir"], File['nginx-init']],
+		require    => [ File["$logdir"], File['nginx-service']],
 	}
 
 }

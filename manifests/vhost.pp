@@ -3,14 +3,15 @@ define nginx::vhost(
 	$host = $name,
 	$port = '80',
 	$root    = "/var/www/$host",
+	$create_root = true,
 	$server_name = "$host",
 	$www	    = '/var/www',
-	$create_root = true,
+	$rails = false,
 ) {
 
 	include nginx
 
-	exec {'create www':
+	exec {"create www $host":
 		command => "/bin/mkdir $www && /bin/chown www-data:www-data $www",
 		unless  => "/usr/bin/test -d $www",
 	}
@@ -21,11 +22,16 @@ define nginx::vhost(
 		owner   => 'www-data',
 		group   => 'www-data',
 		mode    => '0755',
-		require => Exec['create www'],	
+		require => Exec["create www $host"],	
 	}
 	}
-	# Solve path to nginx 
-	exec { 'create sites':,
+
+	$template =  $rails ? {
+	        true    => 'vhost.rails.erb',
+	        default => 'vhost.erb',
+	}
+
+	exec { "create sites $host":,
 		path    => ['/usr/bin','/bin'],
 		unless  => "/usr/bin/test -d  ${nginx::installdir}/conf/sites-available && /usr/bin/test -d ${nginx::installdir}/conf/sites-enabled",
 		command => "/bin/mkdir  ${nginx::installdir}/conf/sites-available && /bin/mkdir ${nginx::installdir}/conf/sites-enabled",
@@ -38,8 +44,8 @@ define nginx::vhost(
 		owner   => 'root',
 		group   => 'root',
 		mode    => '0644',
-		content => template('nginx/vhost.erb'),
-		require => Exec['create sites'],
+		content => template("nginx/$template"),
+		require => Exec["create sites $host"],
 	}
 	file { "$nginx::installdir/conf/sites-enabled/$host":
 		ensure  => link,
@@ -47,7 +53,7 @@ define nginx::vhost(
 		require => File["$host"],
 	}
 
-	exec {'nginx':
+	exec {"nginx $host":
 		command => '/etc/init.d/nginx restart',
 		require => File["$nginx::installdir/conf/sites-enabled/$host"]
 	}
