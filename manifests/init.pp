@@ -5,7 +5,7 @@ class nginx (
 	$passenger_version = '3.0.12',
 	$logdir = '/var/log/nginx',
 	$installdir = '/opt/nginx',	
-	) {	
+	$www	    = '/var/www',) {	
 
 	$options = "--auto --auto-download  --prefix=$installdir" 
 
@@ -19,7 +19,13 @@ class nginx (
 		"$ruby_version/passenger":
 	 		ensure => "$passenger_version",
 	}
-	
+
+	exec {"create container":
+		command => "/bin/mkdir $www && /bin/chown www-data:www-data $www",
+		unless  => "/usr/bin/test -d $www",
+		before  => Exec['nginx-install']
+	}
+
 	exec { 'nginx-install':
 		command => "/bin/bash -l -i -c \"/usr/local/rvm/gems/$ruby_version/bin/passenger-install-nginx-module $options\"",
 		group   => 'root',
@@ -35,14 +41,22 @@ class nginx (
 		content => template('nginx/nginx.conf.erb'),
 		require => Exec['nginx-install'],
 	}
+	
+	exec { 'create sites-conf':,
+		path    => ['/usr/bin','/bin'],
+		unless  => "/usr/bin/test -d  ${installdir}/conf/sites-available && /usr/bin/test -d ${installdir}/conf/sites-enabled",
+		command => "/bin/mkdir  ${installdir}/conf/sites-available && /bin/mkdir ${installdir}/conf/sites-enabled",
+		require => Exec['nginx-install']
+	}
 
 	file { 'nginx-service':
-		path    => '/etc/init.d/nginx',
-		owner   => 'root',
-		group   => 'root',
-		mode    => '0755',
-		content => template('nginx/nginx.erb'),
-		require => File['nginx-config']
+		path      => '/etc/init.d/nginx',
+		owner     => 'root',
+		group     => 'root',
+		mode      => '0755',
+		content   => template('nginx/nginx.erb'),
+		require   => File['nginx-config'],
+		subscribe => File['nginx-config'],
 	}
 
 	file { "$logdir":
