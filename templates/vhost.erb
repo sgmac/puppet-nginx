@@ -1,7 +1,7 @@
 server {
 
       listen <%= port %>;
-      server_name <%= server_name %>;
+      server_name <%= host %>;
       root <%= root %>;
 
       access_log <%= scope.lookupvar('nginx::logdir') %>/<%= host %>_access.log;
