@@ -27,11 +27,11 @@ class nginx (
   $www    = '/var/www' ) {
 
     $options = "--auto --auto-download  --prefix=${installdir}"
-    $dependencies_passenger = [ 'libcurl4-openssl-dev' ]
+    $passenger_deps = [ 'libcurl4-openssl-dev' ]
 
     include rvm
 
-    package { $dependencies_passenger: ensure => present }
+    package { $passenger_deps: ensure => present }
 
     rvm_system_ruby {
       $ruby_version:
