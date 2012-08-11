@@ -1,6 +1,5 @@
 # Class: nginx
-#
-# This module installs Nginx and its default configuration using rvm as the provider.
+# # This module installs Nginx and its default configuration using rvm as the provider.
 #
 # Parameters:
 #   $ruby_version
@@ -54,7 +53,7 @@ class nginx (
       command => "/bin/bash -l -i -c \"/usr/local/rvm/gems/${ruby_version}/bin/passenger-install-nginx-module ${options}\"",
       group   => 'root',
       unless  => "/usr/bin/test -d ${installdir}",
-      require => [ Package[$dependencies_passenger], Rvm_system_ruby[$ruby_version], Rvm_gem["${ruby_version}/passenger"]];
+      require => [ Package[$passenger_deps], Rvm_system_ruby[$ruby_version], Rvm_gem["${ruby_version}/passenger"]];
     }
 
     file { 'nginx-config':
