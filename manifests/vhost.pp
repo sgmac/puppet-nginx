@@ -25,9 +25,9 @@
 #    sever_name =>  'blog.test.com'
 # }
 define nginx::vhost(
-  $host = $name,
+  $host = "${title}",
   $port = '80',
-  $root    = "/var/www/${host}",
+  $root    = "/var/www/${title}",
   $makeroot = true,
   $rails = false,
 ){
@@ -40,6 +40,13 @@ define nginx::vhost(
       group   => 'www-data',
       mode    => '0755',
       require => Class['nginx'],
+    }
+    file { "${root}/index.html":
+	    owner   => 'www-data',
+	    group   => 'www-data',
+	    mode    => '0644',
+	    content => "<b>Virtual host ${host} managed by Puppet</b>",
+	    require => File[$root],
     }
   }
 
